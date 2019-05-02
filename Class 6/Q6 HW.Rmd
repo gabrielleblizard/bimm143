@@ -1,0 +1,119 @@
+---
+title: "Class 6 HW"
+author: "Gabrielle Blizard"
+date: "4/21/2019"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+# Can you improve this analysis code?
+library(bio3d)
+s1 <- read.pdb("4AKE")  # kinase with drug
+s2 <- read.pdb("1AKE")  # kinase no drug
+s3 <- read.pdb("1E4Y")  # kinase with drug
+s1.chainA <- trim.pdb(s1, chain="A", elety="CA")
+s2.chainA <- trim.pdb(s2, chain="A", elety="CA")
+s3.chainA <- trim.pdb(s1, chain="A", elety="CA")
+s1.b <- s1.chainA$atom$b
+s2.b <- s2.chainA$atom$b
+s3.b <- s3.chainA$atom$b
+plotb3(s1.b, sse=s1.chainA, typ="l", ylab="Bfactor")
+plotb3(s2.b, sse=s2.chainA, typ="l", ylab="Bfactor")
+plotb3(s3.b, sse=s3.chainA, typ="l", ylab="Bfactor")
+```
+
+## Q1: What type of object is returned from the read.pdb() function?
+
+### The read.pdb function is used to access the on-line PDB file for proteins and makes a "PDB" object.
+
+## Q2: What does the trim.pdb() function do?
+
+### The trim.pdb function is used to create a smaller PDB object with only a subset of the atoms.
+
+## Q3: What input parameter would turn off the marginal black and grey rectangles in the plots and what do they represent in this case?
+
+### We could turn off the marginal black and grey rectangles by removing the sse parameter from the plotb3 code, which is preset to = NULL. The black and grey rectangles represent the secondary structure elements of the protein.
+
+## Q4: What would be a better plot to compare across the different proteins?
+
+### A cluster dendogram.
+
+## Q5: Which proteins are more similar to each other in their B-factor trends. How could you quantify this?
+
+### Protein s1.b and protein s3.b are more similar to each other in their B-factor trends. This can be quantified using a cluster dendogram.
+```{r}
+hc <- hclust( dist( rbind(s1.b, s2.b, s3.b) ) )
+plot(hc)
+```
+
+##Q6: How would you generalize the original code above to work with any set of input protein structures?
+
+### What functions are we repeating in the original code?
+
+#### read.pdb() allows us to access an online protein data bank
+*s1 <- read.pdb("4AKE")*
+
+#### trim.pdb allows us to produce a smaller subset of the PDB
+*s1.chainA <- trim.pdb(s1, chain="A", elety="CA")*
+
+#### this command allows us to select for specific data in our data set
+*s1.b <- s1.chainA$atom$b*
+
+#### plotb3 allows us to plot our protein sequence
+*plotb3(s1.b, sse=s1.chainA, typ="l", ylab="Bfactor")*
+
+### How can we make this code a function?
+
+```{r}
+protein_plot <- function(pdbid="", chain="", elety="") {
+  
+  # read protein data bank
+  protein <- read.pdb(pdbid)
+  
+  # create a smaller PDB object containing specified chain and atoms
+  protein_chain <- trim.pdb(protein, chain = chain, elety = elety)
+  
+  # select data from dataset
+  protein_chain_B <- protein_chain$atom$b
+  
+  # plot protein B factor
+  plotb3(protein_chain_B, sse = protein_chain, typ="l", ylab="Bfactor")
+}
+```
+
+### What are our inputs?
+#### There are three inputs to the function:
+  *pdbid,*
+  *chain,*
+  *elety*
+  
+### What is our output?
+#### The output of this function is a *plot of the PDB file B factor vs Residue*
+
+### Try it out for protein "4AKE"
+
+```{r}
+protein_plot("4AKE", "A", "CA")
+```
+
+### Try it out for protein "1AKE"
+
+```{r}
+protein_plot("1AKE", "A", "CA")
+```
+
+### Try it out for protein "1E4Y"
+
+```{r}
+protein_plot("1E4Y", "A", "CA")
+```
+
+
+
+
+
+
